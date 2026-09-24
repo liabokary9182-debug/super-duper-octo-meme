@@ -317,6 +317,50 @@
       root.append(article);
     });
   }
+  function buildFinalAnswer(){
+    const focus=state.focus||fallbackFocus[state.category];
+    const last=state.drawn[state.drawn.length-1];
+    const reverseCount=state.drawn.filter(item=>item.reversed).length;
+    const cautious=last.reversed||reverseCount>=2;
+    const cardHint=(last.reversed?last.card.rev:last.card.up).split(/[，；。]/)[0];
+    let answer;
+    switch(focus.label){
+      case "重新靠近一段旧关系":
+        answer=cautious?"现在先不要急着复合；先确认当初造成分开的事是否真的改变。":"可以试着重新联系，但是否复合要看双方能否坦诚处理过去的问题。";break;
+      case "一段关系的去留":
+        answer=cautious?"如果同样的问题一再伤害你，我倾向于先拉开距离，再决定是否结束关系。":"可以先给这段关系一次具体的沟通机会，再看双方是否愿意改变。";break;
+      case "尚未明朗的心意":
+        answer="牌不能替对方回答是否喜欢你；目前更可靠的答案来自对方持续的行动和一次坦诚的交流。";break;
+      case "沟通中的距离":
+        answer="这段沟通还有推进空间，但先谈一件具体的事，听清彼此真正的需要。";break;
+      case "职业转向":
+        answer=cautious?"现在不宜仓促离职；先验证新方向和过渡期的保障，再决定何时换工作。":"可以认真推进换工作的计划；先确认新机会、收入和过渡安排，再作最终决定。";break;
+      case "求职与机会":
+        answer=cautious?"这次机会还不能当作确定结果；继续准备面试，也保留其他选择。":"这份机会值得争取；用具体经历回应岗位要求，同时继续关注后续反馈。";break;
+      case "争取认可":
+        answer=cautious?"先不要只等待认可；把成果和晋升标准谈清楚，再判断下一步。":"可以主动争取晋升或加薪；带着具体成果提出请求并确认时间表。";break;
+      case "项目与合作":
+        answer=cautious?"这个项目先别急着扩大投入；把资源、分工和风险核实后再推进。":"可以推进这个项目；先把责任、资源和下一阶段目标约定清楚。";break;
+      case "学习与准备":
+        answer=cautious?"眼下先调整学习方法和休息节奏，比继续硬撑更有帮助。":"继续准备是可行的；把重点放在短周期练习和复盘上。";break;
+      case "身心的负担":
+        answer="先减轻一项正在消耗你的负担，并寻求可信赖的支持；如果困扰持续影响生活，请联系专业人士。";break;
+      case "生活地点的变化":
+        answer=cautious?"先不要急着搬；核对费用、生活支持和实际落脚条件后再决定。":"搬迁可以认真考虑；先确认成本、支持网络和适应新地方的安排。";break;
+      case "资源与金钱":
+        answer="先以实际数字核对预算和可承受的风险，再决定是否投入；牌面不能预测收益。";break;
+      case "一个尚未落定的选择":
+        answer=cautious?"我倾向于暂缓定案，先核实最关键的条件和代价。":"可以朝更符合你核心需要的选项迈出一步，但先用小规模尝试验证它。";break;
+      case "当下的提醒":
+        answer="今天最值得做的，是把注意力放在一件你能完成的小事上。";break;
+      case "下一段方向":
+        answer=cautious?"先不要逼自己马上确定长期方向；用一个短期尝试看清真正的阻力。":"可以开始探索你想要的方向；先迈出一小步，再根据实际反馈调整。";break;
+      default:
+        answer=/该不该|要不要|是否|能不能|可不可以|适不适合|值得吗/.test(state.question)?(cautious?"我倾向于先不要仓促推进；确认关键条件后再决定。":"可以先尝试，但请用现实反馈确认这条路是否适合你。"):("眼下先从一件可以核实或改变的事入手，再判断下一步。 "+focus.action);
+    }
+    if(state.concern&&/收入|工资|经济|预算|房贷|存款/.test(state.question))answer+=" 特别要先算清收入变化与必要开支。";
+    return "给你的回答："+answer+" 这张牌的依据是"+last.card.name+"（"+(last.reversed?"逆位":"正位")+"）提示的「"+cardHint+"」。";
+  }
   function renderReading(){
     const root=$("reading-content");
     root.replaceChildren();
@@ -345,7 +389,7 @@
     }
     add("我更想请你想一想："+focus.question);
     add(focus.action+(state.concern?" "+state.concern.step:""));
-    add("这份解读只是一种象征性的视角。保留与你的处境相符的部分，放下不适合的部分。","reading-note");
+    add(buildFinalAnswer(),"reading-note");
   }
   function reveal(){
     if(transitionBusy)return;
