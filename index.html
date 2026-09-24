@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14212b">
+  <meta name="description" content="静夜塔罗：写下问题，亲手抽牌，在马赛塔罗的意象中寻找线索。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>静夜塔罗 · Maison des Arcanes</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="./assets/cards/back.svg" as="image">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./data.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="opening" id="opening" aria-hidden="true"><div class="opening-mark"><span>✦</span><small>MAISON DES ARCANES</small></div></div>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand"><span class="brand-icon" aria-hidden="true">✧</span><span><strong>静夜塔罗</strong><small>MAISON DES ARCANES</small></span></div>
+      <div class="header-meta"><span class="header-rule"></span> 一场与自己的对话 <span class="header-rule"></span></div>
+      <button class="header-link" id="about-button" type="button">关于塔罗 <span aria-hidden="true">↗</span></button>
+    </header>
+
+    <main class="main">
+      <section class="intro">
+        <p class="eyebrow"><span class="sparkle">✦</span> THE READING ROOM <span class="sparkle">✦</span></p>
+        <h1>把疑问交给牌，<br><em>把答案留给自己。</em></h1>
+        <p class="intro-copy">写下此刻萦绕心头的问题。我们会为它选择合适的牌阵，再由你亲手抽牌。</p>
+      </section>
+
+      <div class="reading-frame">
+        <div class="frame-top"><span>01 / 提问</span><span class="frame-star">✦</span><span>02 / 抽牌</span><span class="frame-star">✦</span><span>03 / 解读</span></div>
+
+        <section class="panel question-panel" id="question-panel" aria-labelledby="question-heading">
+          <div class="question-copy">
+            <span class="section-index">CHAPTER I <span></span> THE QUESTION</span>
+            <h2 id="question-heading">你想厘清什么？</h2>
+            <p>一个具体、开放的问题，更容易从牌中看见有用的线索。</p>
+            <form id="question-form">
+              <label for="question">你的问题</label>
+              <textarea id="question" name="question" rows="3" maxlength="180" placeholder="例如：我该如何面对最近这段关系的变化？" required></textarea>
+              <div class="form-bottom"><span id="char-count">0 / 180</span><span>问题只留在你的浏览器里</span></div>
+              <button class="primary-button" type="submit"><span>为我选择牌阵</span><span aria-hidden="true">↗</span></button>
+            </form>
+            <div class="prompt-suggestions" aria-label="问题示例"><span>也可以试试</span><button type="button" data-question="今天我最需要留意什么？">今日指引</button><button type="button" data-question="面对目前的工作变化，我可以怎样前进？">工作方向</button><button type="button" data-question="我该如何面对这段关系里的不确定？">关系困惑</button></div>
+          </div>
+          <div class="question-art" aria-hidden="true">
+            <div class="art-halo"></div>
+            <div class="art-card art-card-back"><img src="./assets/cards/back.svg" alt=""></div>
+            <div class="art-card art-card-front"><img src="./assets/cards/17-star.svg" alt=""></div>
+            <div class="art-caption"><span>XVII</span><span>LA STELLA</span><span>希望 · 灵感</span></div>
+          </div>
+        </section>
+
+        <section class="panel spread-panel hidden" id="spread-panel" aria-labelledby="spread-heading">
+          <span class="section-index">CHAPTER II <span></span> THE SPREAD</span>
+          <h2 id="spread-heading">让牌阵回应你的问题</h2>
+          <p class="question-echo" id="question-echo"></p>
+          <div class="recommendation"><span class="recommend-icon">✧</span><p id="spread-reason"></p></div>
+          <div class="spread-options" role="group" aria-label="选择牌阵">
+            <button type="button" class="spread-option" data-spread="one"><span class="option-icon">✦</span><span><strong>一张牌 · 瞬间指引</strong><small>聚焦此刻最值得留意的一点</small></span><span class="option-check" aria-hidden="true"></span></button>
+            <button type="button" class="spread-option" data-spread="three"><span class="option-icon">✦ ✦ ✦</span><span><strong>三张牌 · 层层展开</strong><small id="three-description">现状、阻力与建议</small></span><span class="option-check" aria-hidden="true"></span></button>
+          </div>
+          <div class="spread-controls"><label class="toggle-row"><input type="checkbox" id="reversals" checked><span class="toggle-ui"></span><span>纳入逆位解读 <small>逆位表示能量受阻或需要重新审视</small></span></label><button class="primary-button" id="begin-draw" type="button"><span>开始洗牌</span><span aria-hidden="true">↗</span></button></div>
+        </section>
+
+        <section class="panel draw-panel hidden" id="draw-panel" aria-labelledby="draw-heading">
+          <span class="section-index">CHAPTER III <span></span> THE DRAW</span>
+          <h2 id="draw-heading">慢慢来，选一张有缘的牌</h2>
+          <p class="draw-instruction" id="draw-instruction"></p>
+          <div class="question-ribbon" id="draw-question"></div>
+          <div class="chosen-slots" id="chosen-slots"></div>
+          <div class="deck-stage"><div class="deck-orbit orbit-one"></div><div class="deck-orbit orbit-two"></div><div class="deck" id="deck" role="group" aria-label="可抽取的塔罗牌"></div></div>
+          <div class="draw-footer"><span id="draw-progress" aria-live="polite">已抽 0 / 3 张</span><button type="button" class="primary-button hidden" id="reveal"><span>揭开牌面</span><span aria-hidden="true">✦</span></button><button type="button" class="text-button" id="reshuffle">重新洗牌 ↻</button></div>
+        </section>
+
+        <section class="panel result-panel hidden" id="result-panel" aria-labelledby="result-heading">
+          <span class="section-index">CHAPTER IV <span></span> THE READING</span>
+          <h2 id="result-heading">牌面已为你展开</h2>
+          <p class="result-question" id="result-question"></p>
+          <div class="result-cards" id="result-cards"></div>
+          <div class="reading-text"><div class="reading-title"><span>✦</span><h3>占卜师的解读</h3><span>✦</span></div><div id="reading-content"></div></div>
+          <div class="result-actions"><button class="primary-button" id="new-reading" type="button"><span>再问一个问题</span><span aria-hidden="true">↗</span></button><span>塔罗给你的是视角，决定仍由你做出。</span></div>
+        </section>
+      </div>
+    </main>
+
+    <footer><span>© 静夜塔罗 · MAISON DES ARCANES</span><span>牌面用于自我探索，不替代医疗、法律或财务建议。</span><span>牌图：Tarot de Marseille · CC0</span></footer>
+  </div>
+
+  <dialog id="about-dialog" aria-labelledby="about-title"><form method="dialog"><button class="dialog-close" aria-label="关闭" type="submit">×</button></form><span class="section-index">A NOTE ON THE CARDS</span><h2 id="about-title">关于这场占卜</h2><p>这里使用一套完整的 78 张马赛塔罗牌：22 张大阿尔卡那与 56 张小阿尔卡那。你写下问题后，网站会依问题性质建议一张或三张牌，再由你从洗好的牌中选择。</p><p>正位与逆位是同一张牌的两种阅读角度；逆位不等于坏结果。三张牌按各自牌位连起来看，比单独判断“吉凶”更有意义。</p><p>解读在你的浏览器内完成，不会上传或保存问题。它是帮助整理想法的文字，不是对未来的保证。</p><p class="credit">牌图基于 <a href="https://github.com/SONDLecT/woodcut-tarot" target="_blank" rel="noopener noreferrer">SONDLecT / woodcut-tarot</a>，CC0 授权。</p></dialog>
+</body>
+</html>
+
