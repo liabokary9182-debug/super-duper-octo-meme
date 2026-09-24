@@ -2,8 +2,7 @@
   "use strict";
   const $=id=>document.getElementById(id);
   const panels=[$("question-panel"),$("spread-panel"),$("draw-panel"),$("result-panel")];
-  const state={question:"",category:"general",recommended:"three",spread:"three",positions:[],reversals:true,candidates:[],drawn:[]};
-  const kindLabels={relationship:"关系",work:"工作",choice:"选择",wellbeing:"身心状态",growth:"自我成长",general:"眼前的事"};
+  const state={question:"",category:"general",focus:null,concern:null,recommended:"three",spread:"three",positions:[],reversals:true,candidates:[],drawn:[]};
   const closing={
     relationship:"把你能表达的需求说清楚，也给对方真实回应的空间。牌面无法替任何人说明内心，但可以帮助你辨认自己的界限。",
     work:"把最可控的一步写下来：需要谁的协作、何时尝试、怎样知道它有了进展。行动会让模糊的方向变得具体。",
@@ -20,6 +19,46 @@
     growth:"关于自己的成长，牌面呈现的不只是结果，还有你正在学习如何与变化相处。",
     general:"围绕你的问题，这组牌先把眼前的线索摆在桌面上，再邀请你决定如何回应。"
   };
+  const focusRules=[
+    {pattern:/复合|前任|重新在一起/,label:"重新靠近一段旧关系",framing:"你想知道旧关系还有没有重新靠近的可能。我会特别看旧模式是否改变，以及双方能否用新的方式沟通。",question:"过去让你们疏远的问题，今天有了不同的处理方式吗？",action:"先辨认自己想念的是这个人，还是曾经的熟悉感；若要联系，用清楚而不过度施压的话开场。"},
+    {pattern:/分手|离开.*关系|结束.*感情/,label:"一段关系的去留",framing:"你正在衡量一段关系是否还适合继续。牌面不能替你决定留下或离开，却能帮你看见耗损与仍可修复之处。",question:"你反复退让的部分，是暂时的摩擦，还是已经触及自己的底线？",action:"先写下不可妥协的需要，再决定要谈一次、暂时拉开距离，还是结束关系。"},
+    {pattern:/暧昧|喜欢我|对方.*(心意|想法|态度)|[他她].*(喜欢|在乎)我/,label:"尚未明朗的心意",framing:"你在意的是这份关系究竟走到哪里。我会把牌读作互动的线索，不替对方宣称没有说出口的心意。",question:"对方实际做了什么，与你希望他或她做的有什么不同？",action:"用一次具体、坦诚的交流确认彼此期待，不让猜测独自承担全部答案。"},
+    {pattern:/冷战|争吵|吵架|沟通|误会/,label:"沟通中的距离",framing:"你想让沟通重新流动。这里最值得看的是各自想被理解的部分，以及谈话为什么会卡住。",question:"你更需要对方理解你的感受，还是一起解决一个具体问题？",action:"选一个安静的时刻，说出一件事实、一种感受和一个可回应的请求。"},
+    {pattern:/跳槽|离职|换工作|转行|工作变化|职业变化/,label:"职业转向",framing:"你正在面对工作方向的变化。我会看当前岗位还能提供什么、哪些阻力是真实的，以及下一步需要怎样试探。",question:"让你想改变的，是环境、工作内容，还是成长空间？",action:"先列出新方向的必要条件，再做一项低风险验证，例如了解岗位、更新作品或与业内人士交谈。"},
+    {pattern:/求职|找工作|面试|录用|offer/i,label:"求职与机会",framing:"你在等待一扇职业上的门打开。牌面更适合帮助你检查准备、表达与选择，而不是保证某一次结果。",question:"你的经验中，哪一项最能回应目标岗位真正需要的能力？",action:"把经历整理成具体事例，同时保留不止一个可行机会。"},
+    {pattern:/升职|晋升|加薪/,label:"争取认可",framing:"你希望努力被看见。我会关注成果是否足够清晰、期待是否已被沟通，以及你能主动争取的空间。",question:"你的贡献是否已经用对方能理解的方式呈现？",action:"整理可量化成果，并准备一次具体谈话，确认标准和时间表。"},
+    {pattern:/创业|项目|合作|合伙/,label:"项目与合作",framing:"你关心的是事情能否真正推进。牌面会帮助区分灵感、资源和合作中的责任。",question:"目前最薄弱的一环，是资源、分工，还是对目标的共识？",action:"先把下一阶段的目标、负责人和检验方式写清楚。"},
+    {pattern:/考试|学习|备考|学校/,label:"学习与准备",framing:"你正在为一个需要积累的目标努力。我会把牌读成学习节奏、压力与方法的提醒。",question:"眼下最影响表现的，是知识缺口，还是疲惫与分心？",action:"把目标拆成短周期练习，并安排足够的休息和复盘。"},
+    {pattern:/焦虑|压力|失眠|睡眠|疲惫|情绪/,label:"身心的负担",framing:"你希望知道如何照顾现在的自己。这组牌只提供自我观察的线索，不替代专业帮助。",question:"什么事情正在反复消耗你，而你一直没有给它命名？",action:"先减少一项不必要的负担；若困扰持续或影响日常生活，联系可信赖的人或专业人士。"},
+    {pattern:/搬家|迁居|城市|异地/,label:"生活地点的变化",framing:"你正考虑换一个生活位置。我会同时看离开的理由、现实条件和你想带去的新生活。",question:"新地方最吸引你的是什么，最需要提前解决的现实问题又是什么？",action:"列出成本、支持网络和试住或短期考察的可能，再作决定。"},
+    {pattern:/投资|理财|收入|财务|工资|钱/,label:"资源与金钱",framing:"你在衡量现实资源。我会把牌读作风险意识与选择顺序的提醒，而不是收益预测。",question:"最需要先确认的，是承受风险的能力，还是这笔投入的必要性？",action:"用实际数字核对预算与风险，重大财务决定再向合格专业人士咨询。"},
+    {pattern:/选择|决定|要不要|该不该|是否|还是|哪个|哪条/,label:"一个尚未落定的选择",framing:"你希望在几条路之间看得更清楚。我会把牌当作比较条件的镜子，不把它读成替你做决定的命令。",question:"每个选项要你付出的代价，与你最重视的价值是否相称？",action:"给每个选项写下收益、代价与可逆性，再选择一个可验证的小步骤。"},
+    {pattern:/今天|今日|每日|此刻/,label:"当下的提醒",framing:"你想知道今天最值得留意什么。先不用寻找宏大的预言，这张牌更像一枚照亮眼前的小灯。",question:"今天哪件小事最值得你认真回应？",action:"选一个可以在今天完成的小行动，让牌面的提醒落到现实里。"},
+    {pattern:/迷茫|方向|未来|成长|改变/,label:"下一段方向",framing:"你正在为未来寻找方向。我会看见你已经拥有的力量、尚未清楚的阻力，以及可以尝试的第一步。",question:"你真正想改变的，是目标本身，还是抵达目标的方法？",action:"先设一个短期试验，不必在今天决定整条人生路线。"}
+  ];
+  const fallbackFocus={
+    relationship:{label:"关系中的疑问",framing:lead.relationship,question:"这段关系里，你最需要被理解的是什么？",action:closing.relationship},
+    work:{label:"工作中的方向",framing:lead.work,question:"现在最值得优先处理的现实问题是什么？",action:closing.work},
+    choice:{label:"眼前的选择",framing:lead.choice,question:"哪种代价是你愿意承担的？",action:closing.choice},
+    wellbeing:{label:"身心状态",framing:lead.wellbeing,question:"你目前最需要什么样的支持？",action:closing.wellbeing},
+    growth:{label:"自己的成长",framing:lead.growth,question:"哪一步能让你真正开始改变？",action:closing.growth},
+    general:{label:"眼前的疑问",framing:lead.general,question:"哪些是已知事实，哪些还只是猜测？",action:closing.general}
+  };
+  function findFocus(question,category){
+    return focusRules.find(rule=>rule.pattern.test(question))||fallbackFocus[category];
+  }
+  const concernRules=[
+    {pattern:/收入|工资|经济|预算|房贷|存款/,skip:"资源与金钱",text:"你也在意收入与安全感。阅读牌面时，值得同时衡量愿望和过渡期的现实保障。",step:"把必要开支、可用储备和新机会的收入范围放在一起核对。"},
+    {pattern:/父母|家人|家庭|孩子/,skip:"",text:"家人的期待也是这道问题的一部分。先分清你愿意承担的责任，以及哪些选择仍该由你自己做。",step:"与家人谈清你能承担的部分，也说出需要自主决定的部分。"},
+    {pattern:/信任|背叛|隐瞒|欺骗/,skip:"",text:"你提到了信任。比猜测动机更重要的，是看对方是否愿意以持续的行动修复它。",step:"请求一个可观察的改变，而不是只等待口头保证。"},
+    {pattern:/异地|距离|两地|远距离/,skip:"生活地点的变化",text:"距离让这件事多了一层现实条件。除了感受，也要看双方能否约定可执行的见面与沟通方式。",step:"商定可执行的联系节奏，再看彼此能否持续做到。"},
+    {pattern:/来不及|年龄|时间不够|太晚/,skip:"",text:"时间压力可能让你想尽快得到确定答案。先确认这个期限是真实限制，还是焦虑给出的倒计时。",step:"为决定设一个合理期限，不必被仓促感牵着走。"},
+    {pattern:/不确定|不明确|模糊|看不清/,skip:"",text:"你正被不确定性牵动。牌面能提供观察角度，但清楚的事实仍要靠沟通与验证。",step:"列出最需要确认的三件事实，再选择合适的方式求证。"},
+    {pattern:/疲惫|耗尽|太累|压力大/,skip:"身心的负担",text:"疲惫会改变你看待选择的方式。在作重要决定前，先给自己一点恢复的空间。",step:"留出一段固定的休息时间，再回头看这个决定。"}
+  ];
+  function findConcern(question,focus){
+    return concernRules.find(rule=>rule.pattern.test(question)&&rule.skip!==focus.label)||null;
+  }
   function randomInt(max){
     if(!Number.isInteger(max)||max<1)throw new RangeError("Invalid range");
     const limit=Math.floor(0x100000000/max)*max;
@@ -33,9 +72,112 @@
     for(let i=out.length-1;i>0;i--){const j=randomInt(i+1);[out[i],out[j]]=[out[j],out[i]]}
     return out;
   }
-  function show(panel){
+  let soundEnabled=true;
+  let audioContext=null;
+  let transitionBusy=false;
+  const reducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+  function getAudio(){
+    if(!soundEnabled)return null;
+    const Context=window.AudioContext||window.webkitAudioContext;
+    if(!Context)return null;
+    try{
+      if(!audioContext)audioContext=new Context();
+      if(audioContext.state==="suspended")audioContext.resume().catch(()=>{});
+      return audioContext;
+    }catch{return null}
+  }
+  function tone(ctx,frequency,delay,duration,volume,type="sine"){
+    const start=ctx.currentTime+delay;
+    const oscillator=ctx.createOscillator();
+    const gain=ctx.createGain();
+    oscillator.type=type;
+    oscillator.frequency.setValueAtTime(frequency,start);
+    gain.gain.setValueAtTime(.0001,start);
+    gain.gain.exponentialRampToValueAtTime(volume,start+.018);
+    gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(start);
+    oscillator.stop(start+duration+.02);
+  }
+  function paperSound(ctx,volume=.018){
+    const length=Math.floor(ctx.sampleRate*.16);
+    const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*(1-i/length);
+    const source=ctx.createBufferSource();
+    const filter=ctx.createBiquadFilter();
+    const gain=ctx.createGain();
+    source.buffer=buffer;
+    filter.type="lowpass";
+    filter.frequency.value=1350;
+    gain.gain.value=volume;
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start();
+  }
+  function playSound(kind){
+    const ctx=getAudio();
+    if(!ctx)return;
+    if(kind==="page"){
+      tone(ctx,392,0,.28,.021);
+      tone(ctx,588,.11,.34,.016);
+    }else if(kind==="draw"){
+      paperSound(ctx,.025);
+      tone(ctx,659,.06,.38,.026);
+      tone(ctx,988,.13,.42,.013);
+    }else if(kind==="reveal"){
+      paperSound(ctx,.013);
+      tone(ctx,392,0,.42,.025);
+      tone(ctx,494,.13,.48,.024);
+      tone(ctx,740,.27,.7,.022);
+    }else if(kind==="shuffle"){
+      paperSound(ctx,.032);
+      tone(ctx,330,.03,.24,.014);
+    }
+  }
+  function renderPanel(panel){
     for(const item of panels)item.classList.toggle("hidden",item!==panel);
-    window.scrollTo({top:0,behavior:"smooth"});
+    const frame=document.querySelector(".reading-frame");
+    frame.dataset.stage=panel.id;
+    const top=panel===$("question-panel")?0:frame.getBoundingClientRect().top+window.scrollY-8;
+    window.scrollTo({top:Math.max(0,top),behavior:"auto"});
+  }
+  function focusPanel(panel){
+    const heading=panel.querySelector("h2");
+    if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}
+  }
+  function show(panel,label,soundKind="page"){
+    if(transitionBusy)return Promise.resolve(false);
+    if(reducedMotion.matches){
+      renderPanel(panel);
+      focusPanel(panel);
+      playSound(soundKind);
+      return Promise.resolve(true);
+    }
+    transitionBusy=true;
+    const frame=document.querySelector(".reading-frame");
+    const veil=$("transition-veil");
+    $("transition-label").textContent=label;
+    frame.classList.add("is-transitioning");
+    frame.inert=true;
+    frame.setAttribute("aria-busy","true");
+    veil.classList.add("is-closing");
+    playSound(soundKind);
+    return new Promise(resolve=>{
+      window.setTimeout(()=>{
+        renderPanel(panel);
+        veil.classList.remove("is-closing");
+        veil.classList.add("is-opening");
+        window.setTimeout(()=>{
+          veil.classList.remove("is-opening");
+          frame.classList.remove("is-transitioning");
+          frame.inert=false;
+          frame.removeAttribute("aria-busy");
+          transitionBusy=false;
+          focusPanel(panel);
+          resolve(true);
+        },440);
+      },440);
+    });
   }
   function categorize(question){
     if(/恋|爱|感情|关系|伴侣|复合|分手|暧昧|朋友|婚|对方|他|她/.test(question))return "relationship";
@@ -68,18 +210,20 @@
     $("three-description").textContent=positionsFor(state.question,state.category,"three").join(" · ");
   }
   function enterSpread(){
+    if(transitionBusy)return;
     state.question=$("question").value.trim().replace(/\s+/g," ");
     if(!state.question){$("question").focus();return}
     state.category=categorize(state.question);
+    state.focus=findFocus(state.question,state.category);
+    state.concern=findConcern(state.question,state.focus);
     state.recommended=chooseRecommendation(state.question);
     state.spread=state.recommended;
     $("question-echo").textContent="“"+state.question+"”";
-    const type=kindLabels[state.category];
     $("spread-reason").textContent=state.recommended==="one"
-      ? "你问的是当下的提示。一张牌足以聚焦眼前最值得留意的线索；想看更多层次，也可以选三张牌。"
-      : "关于"+type+"，我建议抽三张牌，依次看见不同层次；如果只想获得一句简短提示，也可以选一张。";
+      ? "你问的是"+state.focus.label+"。我建议用一张牌聚焦此刻；想看更多层次，也可以选三张。"
+      : "你关心的是"+state.focus.label+"。我建议抽三张牌，让现状、张力和行动逐一展开；也可以改选一张。";
     updateSpreadUI();
-    show($("spread-panel"));
+    show($("spread-panel"),"II · THE SPREAD");
   }
   function makeElement(tag,className,textValue){
     const el=document.createElement(tag);
@@ -128,18 +272,20 @@
       root.append(button);
     });
   }
-  function resetDraw(){
+  function resetDraw(withSound=false){
     state.drawn=[];
     state.candidates=shuffle(window.TAROT_DATA).slice(0,9);
     renderSlots();
     renderDeck();
+    if(withSound)playSound("shuffle");
   }
   function enterDraw(){
+    if(transitionBusy)return;
     state.reversals=$("reversals").checked;
     state.positions=positionsFor(state.question,state.category,state.spread);
     $("draw-question").textContent="“"+state.question+"”";
     resetDraw();
-    show($("draw-panel"));
+    show($("draw-panel"),"III · THE DRAW");
   }
   function pickCard(index){
     if(state.drawn.length>=state.positions.length)return;
@@ -150,6 +296,7 @@
     const button=$("deck").querySelector('[data-index="'+index+'"]');
     button.disabled=true;
     button.classList.add("picked");
+    playSound("draw");
     renderSlots();
     const next=$("deck").querySelector(".deck-card:not(:disabled)");
     if(next)next.focus({preventScroll:true});
@@ -174,20 +321,21 @@
     const root=$("reading-content");
     root.replaceChildren();
     const add=(text,klass)=>root.append(makeElement("p",klass||"",text));
-    add(state.drawn.length===1
-      ? "我把这张牌读作你此刻的一盏小灯。关于"+kindLabels[state.category]+"，它把注意力带向"+state.drawn[0].card.theme+"。"
-      : lead[state.category],"reading-lead");
+    const focus=state.focus||fallbackFocus[state.category];
+    add(focus.framing,"reading-lead");
+    if(state.concern)add(state.concern.text,"reading-context");
     state.drawn.forEach(({card,reversed},index)=>{
       const meaning=reversed?card.rev:card.up;
-      let text="在「"+state.positions[index]+"」的位置，"+card.name+"以"+(reversed?"逆位":"正位")+"出现。"+meaning;
-      text+=" "+card.act;
+      const leadIn=state.drawn.length===1?"这张牌":("第"+["一","二","三"][index]+"张牌");
+      let text=leadIn+"是「"+state.positions[index]+"」上的"+card.name+"（"+(reversed?"逆位":"正位")+"）。"+meaning+" "+card.act;
       add(text);
     });
     if(state.drawn.length===3){
       const majorCount=state.drawn.filter(item=>item.card.arcana==="大阿尔卡那").length;
       const reverseCount=state.drawn.filter(item=>item.reversed).length;
       const [first,middle,last]=state.drawn;
-      let bridge="把三张牌连起来看："+first.card.name+"将焦点放在"+first.card.theme+"，"+middle.card.name+"提醒你留意"+middle.card.theme+"，而"+last.card.name+"把下一步带向"+last.card.theme+"。";
+      const cue=item=>(item.reversed?item.card.rev:item.card.up).split(/[，；。]/)[0];
+      let bridge="把三张牌连起来看，"+first.card.name+"提示「"+cue(first)+"」，"+middle.card.name+"让你注意「"+cue(middle)+"」，最后"+last.card.name+"将问题带向「"+cue(last)+"」。";
       if(majorCount>=2)bridge+="这不只是眼前的小插曲，也触及你正在经历的较大转变。";
       else bridge+="线索更多落在日常选择与具体互动中。";
       if(reverseCount>=2)bridge+=" 多张逆位提醒你先辨认卡住的环节，不必急于推动结果。";
@@ -195,15 +343,17 @@
       else bridge+=" 顺着最后一张牌的提示，先让下一步清楚起来。";
       add(bridge);
     }
-    add(closing[state.category]);
+    add("我更想请你想一想："+focus.question);
+    add(focus.action+(state.concern?" "+state.concern.step:""));
     add("这份解读只是一种象征性的视角。保留与你的处境相符的部分，放下不适合的部分。","reading-note");
   }
   function reveal(){
+    if(transitionBusy)return;
     if(state.drawn.length!==state.positions.length)return;
     $("result-question").textContent="“"+state.question+"”";
     renderResultCards();
     renderReading();
-    show($("result-panel"));
+    show($("result-panel"),"IV · THE READING","reveal");
   }
   $("question-form").addEventListener("submit",event=>{event.preventDefault();enterSpread()});
   $("question").addEventListener("input",()=>{$("char-count").textContent=$("question").value.length+" / 180"});
@@ -216,13 +366,32 @@
     state.spread=button.dataset.spread;updateSpreadUI();
   }));
   $("begin-draw").addEventListener("click",enterDraw);
-  $("reshuffle").addEventListener("click",resetDraw);
+  $("reshuffle").addEventListener("click",()=>resetDraw(true));
   $("reveal").addEventListener("click",reveal);
+  const soundToggle=$("sound-toggle");
+  function updateSoundToggle(){
+    soundToggle.setAttribute("aria-pressed",String(soundEnabled));
+    soundToggle.setAttribute("aria-label",soundEnabled?"关闭音效":"开启音效");
+    soundToggle.querySelector(".sound-icon").textContent=soundEnabled?"♫":"♪";
+    soundToggle.querySelector(".sound-label").textContent=soundEnabled?"音效开":"音效关";
+  }
+  soundToggle.addEventListener("click",()=>{
+    soundEnabled=!soundEnabled;
+    updateSoundToggle();
+    if(soundEnabled)playSound("page");
+  });
+  if(!(window.AudioContext||window.webkitAudioContext)){
+    soundEnabled=false;
+    soundToggle.disabled=true;
+    soundToggle.title="当前浏览器不支持音效";
+    updateSoundToggle();
+  }
   $("new-reading").addEventListener("click",()=>{
     $("question").value="";
     $("char-count").textContent="0 / 180";
-    show($("question-panel"));
-    $("question").focus({preventScroll:true});
+    show($("question-panel"),"I · THE QUESTION").then(changed=>{
+      if(changed)$("question").focus({preventScroll:true});
+    });
   });
   $("about-button").addEventListener("click",()=>$("about-dialog").showModal());
   if(!window.TAROT_DATA||window.TAROT_DATA.length!==78)throw new Error("The tarot deck is incomplete.");

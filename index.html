@@ -10,6 +10,7 @@
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="./assets/cards/back.svg" as="image">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./polish.css">
   <script src="./data.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
@@ -19,7 +20,10 @@
     <header class="site-header">
       <div class="brand"><span class="brand-icon" aria-hidden="true">✧</span><span><strong>静夜塔罗</strong><small>MAISON DES ARCANES</small></span></div>
       <div class="header-meta"><span class="header-rule"></span> 一场与自己的对话 <span class="header-rule"></span></div>
-      <button class="header-link" id="about-button" type="button">关于塔罗 <span aria-hidden="true">↗</span></button>
+      <div class="header-actions">
+        <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-label="关闭音效"><span class="sound-icon" aria-hidden="true">♫</span><span class="sound-label">音效开</span></button>
+        <button class="header-link" id="about-button" type="button">关于塔罗 <span aria-hidden="true">↗</span></button>
+      </div>
     </header>
 
     <main class="main">
@@ -29,8 +33,9 @@
         <p class="intro-copy">写下此刻萦绕心头的问题。我们会为它选择合适的牌阵，再由你亲手抽牌。</p>
       </section>
 
-      <div class="reading-frame">
+      <div class="reading-frame" data-stage="question-panel">
         <div class="frame-top"><span>01 / 提问</span><span class="frame-star">✦</span><span>02 / 抽牌</span><span class="frame-star">✦</span><span>03 / 解读</span></div>
+        <div class="transition-veil" id="transition-veil" aria-hidden="true"><div class="transition-center"><span class="transition-insignia">✧</span><span class="transition-label" id="transition-label">MAISON DES ARCANES</span></div></div>
 
         <section class="panel question-panel" id="question-panel" aria-labelledby="question-heading">
           <div class="question-copy">
